@@ -1,0 +1,230 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+% \usepackage{graphics}
+\title{Prime Number Algorithm}
+\author{Nicholas M. Roma}
+\date{June 23, 2021}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+A sieve will reveal the prime numbers by enumerating the natural numbers and filtering multiples. It is possible to generate the primes by successively generating \emph{non-multiples}, i.e., \emph{gaps}, of the primes already generated. The algorithm that generates primes based on this method uses approximately \emph{fewer} iterations than the optimal Sieve of Atkin at $\mathcal{O}(N/\log \log N$). This paper will 
+\begin{enumerate}
+	\item define \emph{gaps} and establish the method of computing \emph{compound gaps}, 
+	\item derive an expression for primes as compound gaps, 
+	\item define the algorithm for generating primes, and
+	\item demonstrate the approximate number of iterations. 
+\end{enumerate} 
+\end{abstract}
+
+\section{Computation of Non-multiples, or \emph{Gaps}}
+
+Throughout the development of the expression for the sequence of primes, the term \emph{gaps} has been used to mean \emph{non-multiples}. The term \emph{gaps} is traditionally used to refer to the differences between successive primes, but below it will mean \emph{non-multiples}.
+
+\paragraph{Gaps}
+The set of gaps of a number $n$, denoted $\gamma _n$, is the set of all non-multiples $g \not \equiv 0 \mod n$. For example, the gaps of 2 are
+	\begin{equation*}\gamma_2 = \{1 \mod 2\}. \footnote{Where the braces nicely explicate the \emph{class} of such equivalents.}\end{equation*}
+The gaps of 3 are
+	\begin{equation*}\gamma_3 = \{1, 2 \mod 3\}. \end{equation*}
+In general the gaps of $n \in \mathbb{N}$ for $n > 1$  are
+	\begin{equation*}\gamma_n = \{1, 2, \dots n-1 \mod n\}. \end{equation*}
+It's interesting to note: the gaps of $0$ are
+	\begin{equation*}\gamma_0 = \mathbb{N}^{0} - \{0\},\end{equation*}
+and the set of gaps of $1$ is 
+	\begin{equation*} \gamma_1 = \varnothing. \end{equation*}
+Similarly, for any $n$,
+	\begin{equation*} 0 \not \in \gamma_n, \end{equation*}
+	\begin{equation*} 1 \in \gamma_n, \end{equation*}
+and, of course,
+	\begin{equation*} n \not \in \gamma_n, \end{equation*}
+in as much as all multiples of $n \not \in \gamma_n$ and therefore $n \cdot 1 \not \in \gamma_n$. 
+
+\paragraph{Bases of Gaps}	Obviously, gaps are \emph{modulo} $n$, or equivalently, gaps are relative to a \emph{base} $n$. This correlates to a description of the gaps of $n$ as a set of expressions. For example, with $x \in \mathbb{N}^{0}$, the gaps of 2 are
+	\begin{equation*}\gamma_2 = \{2x + 1\}, \end{equation*}
+and in general the gaps of base $n \in \mathbb{N}$ for $n > 1$  are
+	\begin{equation*}\gamma_n = \{nx + 1, nx+2, \dots nx+m_{n-1}\}.\end{equation*}
+The gaps of $n$ constitute a set of equivalence classes \emph{modulo} $n$, that is, all the classes not equivalent to zero.
+
+\paragraph{Characteristic of an Equivalence Class}	The \emph{characteristic} is the expression (in base $b$) that yields the elements of an equivalence class $m_i \mod b$, where each element in the class \emph{conforms} to the characteristic. For example, the equivalence class determined by modulus $b$ and some $m_i$ has the \emph{characteristic} of $bx+m_i$. A \emph{proper} characteristic is given as $bx+(m_i \mod b)$. In these terms, \emph{multiples} of $b$ have the characteristic $bx+0$ and \emph{gaps} of $b$ have characteristics like $bx+m_i$ where $m_i \neq 0$. Let $m_i$ be called the \emph{module}, \footnote{Where a \emph{module} corresponds to a column when the $\mathbb{N}^{0}$ are written in base $b$ many columns.} and let the \emph{equivalents} mean the output of a characteristic expression, i.e., the elements of that class. A characteristic is determined by the \emph{base} and the \emph{module}, but with a known base, a module $m_i$ can determine and be determined by a characteristic (and the terms could be interchangeable).
+
+\paragraph{Rank of Equivalent}	The value of $x$ in the characteristic is the \emph{rank} of that equivalent. If $e_x = bx+m_i$ then $e_x$ has \emph{rank} of $x$ in the class $m_i \mod b$. The \emph{unranked} equivalent is the equivalent at rank $x=0$.
+
+\paragraph{Characteristics of Gaps}	 Gaps, then, are sets of characteristics, i.e., those whose equivalents are not multiples of the base. Let the \emph{characteristics of gaps} be denoted as $\chi \gamma_b$, for example,
+	\begin{equation*}\chi \gamma_5 = \{ ``5x+1", ``5x+2", ``5x+3", ``5x+4" \}.\end{equation*}
+Since the base will be known, the characteristics can equivalently be given by just the \emph{modules}, for example,
+	\begin{equation*}\chi \gamma_5 = \{ 1, 2, 3, 4 \}.\end{equation*}
+
+\paragraph{Compound Gaps}	Let \emph{compound gaps} mean the gaps of all of several bases, denoted $\gamma(b_1, b_2, \ldots b_n)$. As \emph{expressions}, it is possible to compose \footnote{Where the terms \emph{compose gaps} and \emph{composition of gaps} are fine, the term \emph{composite gap} should only mean a gap which is a composite number, and the result of composing gaps should be meant by \emph{compound gaps}} the characteristics in order to describe compound gaps. For a characteristic of the gaps of $b$, like $bx+m_i$, it is necessary to consider which characteristic $k_i$ of a coprime base $c$ will result in a multiple of $c$:
+	\begin{equation*}b(cx + k_i) + m_i.\end{equation*}
+Since $k_i$ is being multiplied by $b$ then added to $m_i$, it follows that $b \cdot k_i$ should be equivalent to $c-m_i \mod c$, and therefore $k_i$ should be equivalent to $(b^{-1} \mod c) \cdot (c-m_i) \mod c$. Since $b$ and $c$ are coprime, there is necessarily exactly one  $b^{-1} \mod  c \in \{ 0 \ldots c-1 \}$, given by
+	\begin{equation*}b^{-1} \mod c \equiv b^{\phi(c)-1} \mod c, \footnote{By Euler} \end{equation*}
+so
+	\begin{equation*}k_i \equiv [( b^{\phi(c)-1} \mod c) \cdot (c-m_i \mod c)] \mod c.\footnote{Note when $c$ is \emph{prime} then \begin{equation*}k_i \equiv [( b^{c-2} \mod c) \cdot (c-m_i \mod c)] \mod c.\end{equation*}}\end{equation*}
+This $k_i$ results in 
+	\begin{equation*}b[cx+b^{-1} \cdot (c-m_i)]+m_i \end{equation*}
+	\begin{equation*}= bcx+ 1 \cdot (c-m_i) + m_i \mod c\end{equation*}
+	\begin{equation*}= bcx + c \end{equation*}
+	\begin{equation*}= c(bx+1)\end{equation*}
+which is certainly divisible by $c$. Moreover, if
+	\begin{equation*}k_i \not \equiv  -m_i/b \mod c \implies\end{equation*}
+	\begin{equation*} b \cdot k_i \not \equiv -m_i \mod c \implies\end{equation*}
+	\begin{equation*} b \cdot k_i  + m_i \not \equiv 0 \mod c \implies \end{equation*}
+	\begin{equation*} bcx + (b \cdot k_i  + m_i) \not \equiv 0 \mod c. \end{equation*}
+Therefore, \emph{all of the other} $k_i \in \{ 0 \ldots c-1 \}$ \emph{result in gaps of} $b$ \emph{and of} $c$. \footnote{In fact, in this case,
+	$ bcx + (b \cdot k_i  + m_i) \equiv m_i \mod b$ and $ bcx + (b \cdot k_i  + m_i) \equiv (b \cdot k_i  + m_i) \mod c$} For the gaps $\gamma(b_1, b_2, \dots b_n)$, it is interesting to note:
+	\begin{equation*}0 \notin \gamma(b_1, b_2, \dots b_n), \end{equation*}
+	\begin{equation*}1 \in \gamma(b_1, b_2, \dots b_n), \end{equation*}
+and
+	\begin{equation*}\{ b_1, b_2, \ldots b_n \} \cap \gamma(b_1, b_2, \dots b_n) = \varnothing, \end{equation*}	
+by extension of the notes above in the case of \emph{simple} gaps. Further, for all multiples of all the $b_i$,
+	\begin{equation*}b_i \cdot x \not \in \gamma(b_1, b_2, \ldots b_n). \end{equation*}	
+
+\paragraph{Characteristics of Compound Gaps}	The characteristics of compound gaps have the form
+	\begin{equation*} \gamma(b_1, b_2, \ldots b_n) = \{ (b_1 \cdot b_2 \ldots \cdot b_n)x + m_i \} \mid 1 \leq m_i \leq (b_1 \cdot b_2 \ldots \cdot b_n)-1.\end{equation*}
+In particular, the compound gaps of successive prime bases will have the form
+	\begin{equation*} \gamma(2, 3, \ldots p_n) = \{ (p_n\#)x + m_i \} \mid 1 \leq m_i \leq p_n\#-1.\end{equation*}
+
+\paragraph{Number of Characteristics of Compound Gaps}	The $k_i$ which bears a multiple of $c$ has been referred to (in the utmost \emph{formal} situations) as the \emph{magic mod}. By extension, all of the other $k_i$ in $c$'s modules would be \emph{muggle mods}. There is always \emph{one} magic mod and $c-1$ muggles (from $0 \leq k_i \leq c-1$). When all of the characteristics are composed, then, for each of the characteristics of gaps of $b$, there will be $c-1$ many resultant characteristics, one for each muggle mod of $c$. \footnote{It is important to note all the $k_i$ of $c$'s modules get \emph{a shot} to be the magic mod for a given $m_i$ of $b$'s. In other words, they take turns being magic or muggle depending on the $m_i$} In other words, the number of characteristics for the compound gaps will be like the muggles of $c$ for each $m_i$ of $b$'s. So,
+	\begin{equation*}\lvert \chi \gamma(b,c) \rvert = (b-1) \cdot (c-1).\end{equation*}	
+And in general for $\gamma(b_1, b_2, \ldots b_n)$
+	\begin{equation*}\lvert \chi \gamma(b_1, b_2, \dots b_n) \rvert = (b_1-1) \cdot (b_2-1) \cdot (b_3-1) \ldots (b_n-1).\end{equation*}
+In particular, the number of characteristics for compound gaps of successive primes to $p_n$, denoted $g_\pi(p_n)$, is
+	\begin{equation*}g_{\pi}(p_n) = (2-1) \cdot (3-1) \cdot (5-1) \ldots \cdot (p_{n}-1)  \end{equation*}
+	\begin{equation*} = \prod_{i=1}^{n} p_{i} -1.\end{equation*}
+
+\section{Primes as Compound Gaps}
+
+\paragraph{Nearest Prime Functions}	It will be helpful to define the \emph{nearest prime predecessor} of a number $n$ as
+	\begin{equation*}n' = \text{the largest prime } p \mid p \leq n,\end{equation*}
+and the \emph{least greater prime} of $n$ as
+	\begin{equation*}n^* = \text{the smallest prime } p  \mid p > n.\end{equation*}
+Note
+	\begin{equation*}n'^* = n^*,\end{equation*}
+and
+	\begin{equation*}(n')' = n'.\end{equation*}
+To pull a prime number down to the previous prime, it would be neccessary find the predecessor of the number minus one:
+	\begin{equation*} p_{i-1} = (p_i-1)',\end{equation*}
+where
+	\begin{equation*} (p_i)' = p_i.\end{equation*}
+
+\paragraph{Prime Gaps on $P_n$}	For the gaps of several prime bases, $\gamma(p_1, p_2, \dots p_n)$, none of the bases nor their multiples are elements in the gaps. In particular, for \emph{successive} primes, $\{ 2, 3, 5, \dots p_n \}$, none of them nor their multiples are elements in the gaps. Therefore, all $g \in \gamma(2, 3, 5 \dots p_n)$ have a prime factorization like
+	\begin{equation*}g = p_{n+1}^{x_1} \cdot  p_{n+2}^{x_2} \cdot p_{n+3}^{x_3} \cdot p_{n+4}^{x_4} \ldots \end{equation*}
+When all the $x_i = 0$, the result is $g = 1$, which is known to be an element of the gaps. The smallest non-trivial element is when $x_1 = 1$ and the remaining exponents are all $0$, which is $p_{n+1}$. Similarly, the smallest composite gap is when $x_1 = 2$ and the remaining exponents are all $0$, that is, $p_{n+1}^2$. What this means is 
+	\begin{enumerate}
+ 		\item \emph{the smallest non-trivial element of the gaps of successive primes is always the next prime,}
+		\item \emph{the smallest composite number in the gaps is} $p_{n+1}^2$, and therefore
+		\item \emph{all} $g \in \gamma(2, 3, \dots p_n) \mid p_{n+1} \leq g < p_{n+1}^2$ \emph{are prime!}
+	\end{enumerate}
+Noting that $p_{n+1} = p_n^*$, let the \emph{prime gaps on $p_n$}, denoted $\bar{\gamma}_{p_n}^*$, be
+	\begin{equation*}\bar{\gamma}_{p_n}^* = g \in \gamma(2, 3, \dots p_n) \mid p_n^* \leq g < (p_n^*)^2.\end{equation*}
+The careful reader will notice that in the case of $\bar{\gamma}_{p_n}^*$, the subscript $p_n$ denotes \emph{all} the successive prime bases, i.e., $2 \ldots p_n$.
+ 
+\paragraph{Proper Prime Gaps on $P_n$}	The prime gaps on $p_{n-1}$ are 
+	\begin{equation*}\bar{\gamma}_{p_{n-1}}^* = g \in \gamma(2, 3, \dots p_{n-1}) \mid p_n \leq g < p_n^2 \end{equation*}
+Since $p_n < 2 \cdot p_{n-1} \implies p_n < p_{n-1}^2$, \footnote{by Chebyshev} there is always an overlap of the prime gaps on $p_{n-1}$ with those on $p_n$, namely
+	\begin{equation*}\bar{\gamma}_{p_{n-1}}^* \cap \bar{\gamma}_{p_n}^* = \{ p_n^*, \dots (p_n^2)' \}.\end{equation*}
+Let the \emph{novel} prime gaps on $p_n$, or the \emph{proper} prime gaps on $p_n$, denoted $\gamma_{p_n}^*$, be the gaps
+	\begin{equation*}\gamma_{p_n}^* = g \in \gamma(2, 3, \ldots p_n) \mid p_n^2 < g < (p_n^*)^2.\end{equation*}
+
+\paragraph{Regular Prime Gaps}	 At a certain point $p_n$, the base $p_n\#$ is large enough that all of the prime gaps are always \emph{unranked}. If the characteristics of the prime gaps are
+	\begin{equation*}\chi \gamma_{p_n}^* = \{ (p_n\#)x + m_i \} \mid p_n^2 < m_i < (p_n^*)^2,\end{equation*}
+since this base $p_n\# >> (p_n^*)^2$ then all primes from $(p_n^2)'$ to $((p_n^*)^2)'$ correspond \emph{singly} \footnote{i.e., one-to-one} to a characteristic, because $x>0 \implies (p_n\#)x+m_i>(p_n^*)^2$, thus $x$ can only be $0$, and therefore all the prime gaps are \emph{unranked}. In fact, at this same $p_n$, the base is also large enough that \emph{all} primes thru $(p_n\#-1)'$ are \emph{all} unranked. The prime gaps which are always unranked are the \emph{regular} prime gaps, i.e., $p_n \geq 7.$
+
+\paragraph{Primes as Compound Gaps of Primes}	These terms allow for the expression of the sequence of primes. Let $n$ be such that $p_r^2 \leq n < p_{r+1}^2. \footnote{So $p$ is $n$'s \emph{prime root correspondent.}}$ The sequence of primes \emph{on} $n$, denoted $\alpha_n$, is given by
+	\begin{equation*}\alpha_n = \{ 2, 3, 5, \ldots (p_r^2)' \} \cup \{ (p_r^2)', \ldots n', \ldots (p_{r+1}^2)' \} \end{equation*}
+	\begin{equation*}= \alpha_{p_r^2} \cup \gamma_{p_r}^* \end{equation*}
+	\begin{equation*}= \{ 2, 3, 5, \ldots (p_{r-1}^2)' \} \cup \{ (p_{r-1}^2)', \ldots (p_{r}^2)' \} \cup \gamma_{p_r}^* \end{equation*}
+	\begin{equation*}= \alpha_{p_{r-1}^2} \cup \gamma_{p_{r-1}}^* \cup \gamma_{p_r}^*. \end{equation*}
+By continuation,
+	\begin{equation*}\alpha_n = \gamma_{p_0}^* \cup \gamma_{p_1}^* \ldots \gamma_{p_{r-1}}^* \cup \gamma_{p_r}^*. \end{equation*}
+
+
+\section{Prime Number Algorithm} \label{primeAlgorithm}
+
+\paragraph{Tactic of the Algorithm}	From the expression of primes on $n$ above, the tactic of computing primes would be to successively compose the characteristics of primes to the \emph{prime root correspondent} of $n$, at each step yielding the proper prime gaps on $p_i$. There is a variation of the algorithm which keeps the base smaller (but still astronomical) and probably scales better. This variation utilizes the fact that a non-trivial $n'$ will be a regular prime gap when the base $p_c\#$ becomes greater than $n'$, because at that point, the characteristics span $p_c^* \leq n' \leq p_c\#-1$, and therefore all primes thru $n'$ will be computed \footnote{Incidentally, $n'$ will also occur in other compound gaps, not \emph{just} when $p_c\#$ becomes greater than $n'$.}, after \emph{removing the composite modules.}
+
+\paragraph{Inverse Primorial Correspondent}	Let the \emph{inverse primorial correspondent}, denoted $n\#_c$, be the smallest prime $p_c$ such that $p_c\# \geq n$. Note
+	\begin{equation*}(n\#_c)\# \ge n,\end{equation*}
+and
+	\begin{equation*}(p_c\#)\#_c = p_c.\end{equation*}
+The characteristics of the gaps of primes thru $p_c$ contain $p_c\#x+n'$, for non-trivial $n$.
+
+\paragraph{Characteristics with a Composite Module}	After computing all characteristics to $n'$, it will be important to the algorithm to know which characteristics will be composite. Excluding the characteristics with composite modules will leave only the primes, and, assuming the characteristics are \emph{regular}, all primes in the range $p_c^*$ to $(p_c\#-1)'$ will be represented by the remaining characteristics. The modules from $p_c^*$ to $(p_c^*)^2$ are already known to be prime (as the prime gaps on $p_c$). The composite modules in the range $(p_c^*)^2$ to $p\#-1$ are given by all combinations of prime factors from $p^*$ to $(\frac{p\#-1}{p^*})'$. It's possible to express all combinations of factors as pairs, by first considering $m_i = f_1 \cdot w_1$ , then considering $m_j = m_i \cdot w_2$. To this end I want to consider the factors $f_i$ as a factor and as a tuple of \emph{subfactors}. When I mean $f_i$ as a factor I'll say $\lvert \vec{f_i} \rvert$, which is the product of all the components of $\vec{f_i}$, and when I mean all the subfactors of $f_i$ I'll say $\langle c_1, c_2, \ldots c_n\rangle$. In particular when I mean the maximum subfactor I'll say $\lceil\vec{f_i}\rceil$ \footnote{If you can forgive my taking such notational liberties (but I've already gone \emph{this} far; you should've raised your objection before now)}. In this way the algorithm can carry the prime factorization with the current factor being considered.
+
+\pagebreak
+
+\paragraph{Pseudocode}
+\begin{enumerate}
+\item \textbf{Set} $\phi \leftarrow \{ \langle p^* \rangle, \ldots \langle \sqrt{p\#-1}' \rangle \}$, where $\phi$ is a set of tuples of prime factors.
+\item \textbf{For Each} $\vec{f_i} \in \phi$
+	\begin{enumerate}
+	\item \textbf{If} $\frac{p\#-1}{\lvert \vec{f_i} \rvert} \geq p^*$ \textbf{Then}
+		\begin{enumerate}
+		\item \textbf{For Each} $\omega_j \in \{p^*, \ldots (\frac{p\#-1}{\lvert \vec{f_i} \rvert})'\}$ where $\omega_j \geq \lceil \vec{f_i} \rceil$
+			\begin{enumerate}	
+				\item \textbf{Set} $m_i \leftarrow \lvert \vec{f_i} \rvert \cdot \omega_j$
+				\item \textbf{Add} $m_i$ to $compositeModules$
+				\item \textbf{If} $\frac{p\#-1}{m_i} \geq p^*$ \textbf{Then Add} $\vec{ m_i} = \langle c_1, c_2, \ldots c_n, \omega_j \rangle$ to $\phi$, where $\langle c_1, c_2, \ldots c_n\rangle = \vec{f_i}$. 
+			\end{enumerate}
+		\end{enumerate}
+	\end{enumerate}
+\end{enumerate}
+
+\paragraph{Computation of the Sequence of Primes}		Generating the primes to $N'$ then becomes the same as computing the gaps of the primes from 2 to $N\#_{c-1}$, then composing these characteristics with $N\#_c$ but only until reaching the characteristic for $N'$, then iterating the characteristics from $(p_{c+1}^2)'$ to $N'$ \emph{except} those with a composite module.
+
+\paragraph{Pseudocode}
+\begin{enumerate}
+\item \textbf{Set} $primes \leftarrow \{ 2, 3 \}$; \textbf{Set} $p_i \leftarrow 3$, \textbf{Set} $base \leftarrow 2\#$, \textbf{Set} $p_{i+1} \leftarrow 3$
+\item \textbf{Set} $partition \leftarrow \{ 2\#x+1 \}$
+\item \textbf{Do Until} $base \geq N$, i.e., for $base \in \{ 2, \ldots N\#_{c-1} \}$.
+	\begin{enumerate}
+	\item  \textbf{Add} to \emph{primes} all equivalents $e_{prime}$ in the \emph{partition} where $p_i^2 < e_{prime} < p_{i+1}^2$ and $e_{prime} \leq N$
+	\item \textbf{Set} $p_i \leftarrow p_{i+1}$, \textbf{Set} $p_{i+1} \leftarrow primes.Next$
+	\item \textbf{For} $r_i = 0 \dots p_i$
+		\begin{enumerate}
+		\item \textbf{For Each} characteristic $m_i$ \textbf{in} $partition$
+			\begin{enumerate}
+			\item \textbf{Compute} $k_i$ from $base(p_ix+k_i)+m_i$. ($base$ and $p_i$ must be coprime because $p_i$ is a prime and $base$ is the product of the primes less than $p_i$.)
+			\item \textbf{If} $k_i$ is negative \textbf{Then} \textbf{Set} $k_i \leftarrow k_i + p_i$. (This $k_i$ should be $0 \leq k_i < p_i$.)
+			\item \textbf{If} $k_i = r_i$ \textbf{Then} \textbf{Continue}
+			\item \textbf{If} $base \cdot p_i x + base \cdot r_i+m_i \leq N$ \emph{for any rank} $\geq 0$ \textbf{Then Add} it to the $partition$.
+			\item \textbf{Else Break}. (All $m_i$ after this will also be greater than $N$.)
+			\end{enumerate}
+		\end{enumerate}
+	\item \textbf{Set} $base \leftarrow base \cdot p_i$
+	\end{enumerate}
+\item \textbf{Compute} the $\chi_c \gamma(2, 3, \dots N\#_c)$ where the modules are less than or equal to $N'$
+\item \textbf{Add} $\chi_p = \chi \gamma(2, 3, \dots N\#_c) - \chi_c \gamma(2, 3, \dots N\#_c)$ to $partition$.
+\end{enumerate}
+
+\paragraph{Implementation Notes}	An implementation may need to create a partition \emph{per round}, otherwise the enumeration will alter the set it is enumerating. The \emph{base} would need to be a non-primitive type capable of holding an arbitrarily large number, in fact it will become $N\#_c\#$. This can cause a long time delay as a component operation of computing $k_i$ is finding $p_i\# \mod p_j$. Since $base$ is constant per step of the do-until loop, storing a copy of $base$  per characteristic in the partition is not necessary. This is why there is a separate variable for $base$ above, despite the fact characteristics are described as complete expressions. Since each $r_i$ of $p_i$ is iterated over each $m_i$ of $base$, the primes will be generated \emph{in order}, and as \emph{proper prime gaps} on $base$, they are not duplicated. It is necessary to compute the range of ranks for \emph{irregular} prime gaps, i.e., for primes less than $(11^2)'$ which will have ranks from about $0 \leq x \leq 4$. Once the $base$ is greater than or equal to $7$, it can be assumed they are \emph{unranked}.
+
+\section{Big O PNA} \label{bigOpna}
+
+\paragraph{Number of Computed Characteristics}	The $\mathcal{O}(PNA)$ is concerned with the number of compositions of characteristics - the same as the number of $k_i$'s computed. The algorithm effectively iterates over $base = 2\# \dots N\#_c$, but it will break as soon as the resultant characteristic is larger than N. This effectively means all characteristics of $\gamma(2, 3, \ldots N\#_{c-1})$ are computed, and all characteristics for $N\#_c$ up to $N'$, so the number of compositions is
+	\begin{equation*} \sum_{p_i=2}^{N\#_{c-1}} g_{\pi}(p_i) + g_{\pi}(N\#_c) \frac{N}{N\#_c\#-1}.  \end{equation*}
+To remove the composite modules, the algorithm effectively removes all non-primes from the characteristics:
+	\begin{equation*}  g_{\pi}(N\#_c) \frac{N}{N\#_c\#-1} - [\pi(N) - \pi(N\#_{c+1})] - 1.  \end{equation*}
+The total number of steps of the algorithm is approximately
+	\begin{equation*} \sum_{p_i=2}^{N\#_{c-1}} g_{\pi}(p_i) + g_{\pi}(N\#_c) \frac{2 N}{N\#_c\#-1} - \pi(N) + \pi(N\#_{c+1}) - 1.  \end{equation*}
+
+%\paragraph{Numerical Analysis}	Here's a graph for the number of iterations for values of $N$. 
+
+% \includegraphics{pna_and_soa.png}
+
+\section{Conclusions}\label{conclusions}
+TBD: We want some kind of proof of correctness of the given formula and an analytic comparison of Omega PNA with Omega Atkin, i.e. $\mathcal{O}(N/\log \log N$).
+
+% show time tables from teh run stats...
+
+%\begin{thebibliography}{9} \label{bibliography}
+%	\bibitem[1]{atkin} A.O.L. Atkin, D.J. Bernstein, Prime sieves using binary quadratic forms, Math. Comp. 73 (2004), 1023-1030.
+%	\bibitem[2]{rosser} J. Barkley Rosser, Lowell Schoenfeld, Approximate Formulas for some Functions of Prime Numbers,  Ill. Journ. Math. 6 (1962), 64-94
+%	\bibitem[3]{weisstein} Weisstein, Eric W. "Chebyshev Functions". MathWorld.
+%\end{thebibliography}
+
+\end{document}
